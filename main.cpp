@@ -185,7 +185,7 @@ int main(int argc, char const *argv[])
                 }
               }
               currentTurn = !currentTurn;
-              // shapesCount++;
+              shapesCount++;
             }
           }
         }
