@@ -105,8 +105,10 @@ int checkVert(int grids[3][3], int i)
 
 int checkDiag(int grids[][3], bool reverse = false)
 {
+  // reverse is a flag. If reverse == true, reverse diagonal is checked.
   if (!reverse)
   {
+    // Check the diagonal elements
     if (grids[0][0] != 0)
       if ((grids[0][0] == grids[1][1]) and (grids[0][0] == grids[2][2]))
       {
@@ -115,6 +117,7 @@ int checkDiag(int grids[][3], bool reverse = false)
   }
   else
   {
+    // Check the reverse diagonal elements
     if (grids[0][2] != 0)
       if ((grids[0][2] == grids[1][1]) and (grids[0][2] == grids[2][0]))
       {
@@ -157,7 +160,7 @@ int isGameWon(int grids[3][3])
   return false;
 }
 
-void print(int grids[][3])
+void printGrid(int grids[][3])
 {
   for (int i = 0; i < 3; i++)
   {
@@ -166,6 +169,16 @@ void print(int grids[][3])
     std::cout << std::endl;
   }
 }
+
+void clearGrid(int grids[][3])
+{
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+      grids[i][j] = 0;
+  }
+}
+
 int main(int argc, char const *argv[])
 {
   // Create the main window
@@ -174,7 +187,12 @@ int main(int argc, char const *argv[])
 
   // Keep track of whose turn it is
   bool currentTurn = true; // true means its X's turn and false means it is O's turn
-  int grids[3][3] = {0};   // 0 is for not filled, 1 is for filled by X and 2 is for filled by O
+
+  // The state of the board
+  int grids[3][3] = {0}; // 0 is for not filled, 1 is for filled by X and 2 is for filled by O
+
+  // Store the number of moves made
+  int movesMade = 0;
 
   // Main game loop
   while (window.isOpen())
@@ -224,6 +242,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 300, 200);
                   grids[0][0] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else if (xPos <= 450)
@@ -233,6 +252,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 405, 200);
                   grids[0][1] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else
@@ -242,6 +262,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 500, 200);
                   grids[0][2] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
             }
@@ -255,6 +276,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 300, 300);
                   grids[1][0] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else if (xPos <= 450)
@@ -264,6 +286,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 405, 300);
                   grids[1][1] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else
@@ -273,6 +296,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 500, 300);
                   grids[1][2] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
             }
@@ -286,6 +310,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 300, 400);
                   grids[2][0] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else if (xPos <= 450)
@@ -295,6 +320,7 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 405, 400);
                   grids[2][1] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
               else
@@ -304,15 +330,27 @@ int main(int argc, char const *argv[])
                   drawShape(window, currentTurn, 500, 400);
                   grids[2][2] = !currentTurn + 1;
                   currentTurn = !currentTurn;
+                  movesMade++;
                 }
               }
             }
           }
         }
-        // print(grids);
+        // printGrid(grids);
       }
     }
     window.display();
+
+    // If 9 moves have been made, the game is a draw
+    if (movesMade == 9)
+    {
+      // Reset the states of the game
+      movesMade = 0;    // 0 moves have been made after draw
+      clearGrid(grids); // Clear the grid
+      s.clear();        // Clear all shapes
+
+      std::cout << "Game draw. Play Again" << std::endl;
+    }
     // Check if the game is won
     if (isGameWon(grids))
     {
