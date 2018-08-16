@@ -24,3 +24,10 @@ To run this project:
     
             >./main
             
+
+Todo:
+
+    [x] Create a playable 2 player game
+    [] Add scores to the game
+    [] Add AI to the game
+    
