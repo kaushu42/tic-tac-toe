@@ -1,6 +1,8 @@
 # tic-tac-toe
-This is a simple Tic Tac Toe game I'm creating.
-Currently you can add X's and O's anywhere on the screen.
+This is a simple Tic Tac Toe game I created.
+You can play against another player.
+The game exits when someone wins. The winner is displayed on the console.
+When a draw occurs, the game restarts.
 
 Created using SFML.
 
