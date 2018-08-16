@@ -47,6 +47,10 @@ void drawX(sf::RenderWindow &window, int xPos, int yPos)
   s.push_back(cross);
 }
 
+void drawShape(sf::RenderWindow &window, bool shape, int xPos, int yPos)
+{
+  shape ? drawX(window, xPos, yPos) : drawO(window, xPos, yPos);
+}
 // Draw the board from vertical and horizontal lines
 void drawBoard(sf::RenderWindow &window)
 {
@@ -83,30 +87,33 @@ int main(int argc, char const *argv[])
   // r.setOrigin(r.getPosition().x + r.getRadius(), r.getPosition().y + r.getRadius());
 
   // Count how many shapes have been placed
-  int shapesCount = 0;
+  int shapesCount = 1;
 
   bool currentTurn = true; // true means its X's turn and false means it is O's turn
-
+  bool gridsFilled[9] = {false};
+  for (auto &i : gridsFilled)
+  {
+    std::cout << i << ", ";
+  }
+  std::cout << std::endl;
   // Main game loop
   while (window.isOpen())
   {
     // Create a event to handle all keyboard and mouse actions
     sf::Event e;
+
     // Set the background color
     window.clear(sf::Color(120, 140, 160));
 
-    // sf::RectangleShape rect;
-    // rect.setPosition(windowWidth / 2 - 150, windowHeight / 2 - 150);
-    // rect.setSize(sf::Vector2f(300, 300));
-    // window.draw(rect);
-
     // Draw the board
     drawBoard(window);
+
     // For all shapes, in 's', draw them one after another
     for (auto &i : s)
     {
       window.draw(*i);
     }
+
     // Check for events
     while (window.pollEvent(e))
     {
@@ -115,30 +122,75 @@ int main(int argc, char const *argv[])
       {
         window.close();
       }
-      if (shapesCount < 9)
+      // Handle key events only if number of shapes is less than or equal to 9
+      if (shapesCount <= 9)
       {
         if (e.type == sf::Event::MouseButtonPressed) // Handle mouse presses
         {
           // Get the current mouse position
           float xPos = e.mouseButton.x, yPos = e.mouseButton.y;
           std::cout << xPos << ',' << yPos << std::endl;
+
+          // Check if the click is inside the board
           if (xPos >= 250 and xPos <= 550 and yPos >= 150 and yPos <= 450)
           {
             if (e.mouseButton.button == sf::Mouse::Left)
             {
-              std::cout << xPos << ',' << yPos << std::endl;
-              if (currentTurn)
-                drawX(window, xPos, yPos);
+              // For boxes (0, 0), (0, 1), (0, 2)
+              if (yPos <= 250)
+              {
+                if (xPos <= 350)
+                {
+                  drawShape(window, currentTurn, 300, 200);
+                }
+                else if (xPos <= 450)
+                {
+                  drawShape(window, currentTurn, 405, 200);
+                }
+                else
+                {
+                  drawShape(window, currentTurn, 500, 200);
+                }
+              }
+              // For boxes (1, 0), (1, 1), (1, 2)
+              else if (yPos <= 350)
+              {
+                if (xPos <= 350)
+                {
+                  drawShape(window, currentTurn, 300, 300);
+                }
+                else if (xPos <= 450)
+                {
+                  drawShape(window, currentTurn, 405, 300);
+                }
+                else
+                {
+                  drawShape(window, currentTurn, 500, 300);
+                }
+              }
+              // For boxes (2, 0), (2, 1), (2, 2)
               else
-                drawO(window, xPos, yPos);
+              {
+                if (xPos <= 350)
+                {
+                  drawShape(window, currentTurn, 300, 400);
+                }
+                else if (xPos <= 450)
+                {
+                  drawShape(window, currentTurn, 405, 400);
+                }
+                else
+                {
+                  drawShape(window, currentTurn, 500, 400);
+                }
+              }
               currentTurn = !currentTurn;
+              // shapesCount++;
             }
-            shapesCount++;
           }
         }
       }
     }
-
     window.display();
   }
 
