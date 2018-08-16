@@ -21,24 +21,30 @@ void drawO(sf::RenderWindow &window, int xPos, int yPos)
   s.push_back(c);
 }
 
-void drawItems() {}
-
 // Draw X's on the screen
 void drawX(sf::RenderWindow &window, int xPos, int yPos)
 {
-  float width = 10, height = 50 * sqrt2; // The parameters of the Cross
-  // Create the first rectangle for the cross shape
-  sf::RectangleShape *r = new sf::RectangleShape(sf::Vector2f(width, height));
-  r->setOrigin(width / 2, height / 2);
-  r->move(xPos, yPos);
-  r->rotate(45);
-  // Push the rectangle to the vector containing all the shapes
-  s.push_back(r);
-  // Create the second rectangle for the cross shape
-  sf::RectangleShape *r1 = new sf::RectangleShape(*r);
-  r->rotate(-90);
-  // Push the rectangle to the vector containing all the shapes
-  s.push_back(r1);
+  // Parameters for the cross
+  float width = 30, edgeSize = 7;
+
+  // Create a Cross shape with 12 vertices
+  sf::ConvexShape *cross = new sf::ConvexShape(12);
+
+  // Define the vertices
+  cross->setPoint(0, sf::Vector2f(xPos, yPos - edgeSize));
+  cross->setPoint(1, sf::Vector2f(xPos + (width - edgeSize), yPos - width));
+  cross->setPoint(2, sf::Vector2f(xPos + width, yPos - (width - edgeSize)));
+  cross->setPoint(3, sf::Vector2f(xPos + edgeSize, yPos));
+  cross->setPoint(4, sf::Vector2f(xPos + width, yPos + (width - edgeSize)));
+  cross->setPoint(5, sf::Vector2f(xPos + (width - edgeSize), yPos + width));
+  cross->setPoint(6, sf::Vector2f(xPos, yPos + edgeSize));
+  cross->setPoint(7, sf::Vector2f(xPos - (width - edgeSize), yPos + width));
+  cross->setPoint(8, sf::Vector2f(xPos - width, yPos + (width - edgeSize)));
+  cross->setPoint(9, sf::Vector2f(xPos - edgeSize, yPos));
+  cross->setPoint(10, sf::Vector2f(xPos - width, yPos - (width - edgeSize)));
+  cross->setPoint(11, sf::Vector2f(xPos - (width - edgeSize), yPos - width));
+  // Push the cross to the vector containing all the shapes
+  s.push_back(cross);
 }
 
 // Draw the board from vertical and horizontal lines
@@ -79,6 +85,8 @@ int main(int argc, char const *argv[])
   // Count how many shapes have been placed
   int shapesCount = 0;
 
+  bool currentTurn = true; // true means its X's turn and false means it is O's turn
+
   // Main game loop
   while (window.isOpen())
   {
@@ -86,6 +94,12 @@ int main(int argc, char const *argv[])
     sf::Event e;
     // Set the background color
     window.clear(sf::Color(120, 140, 160));
+
+    // sf::RectangleShape rect;
+    // rect.setPosition(windowWidth / 2 - 150, windowHeight / 2 - 150);
+    // rect.setSize(sf::Vector2f(300, 300));
+    // window.draw(rect);
+
     // Draw the board
     drawBoard(window);
     // For all shapes, in 's', draw them one after another
@@ -107,21 +121,24 @@ int main(int argc, char const *argv[])
         {
           // Get the current mouse position
           float xPos = e.mouseButton.x, yPos = e.mouseButton.y;
-
-          if (e.mouseButton.button == sf::Mouse::Left)
+          std::cout << xPos << ',' << yPos << std::endl;
+          if (xPos >= 250 and xPos <= 550 and yPos >= 150 and yPos <= 450)
           {
-            std::cout << xPos << ',' << yPos << std::endl;
-            drawX(window, xPos, yPos);
+            if (e.mouseButton.button == sf::Mouse::Left)
+            {
+              std::cout << xPos << ',' << yPos << std::endl;
+              if (currentTurn)
+                drawX(window, xPos, yPos);
+              else
+                drawO(window, xPos, yPos);
+              currentTurn = !currentTurn;
+            }
+            shapesCount++;
           }
-          if (e.mouseButton.button == sf::Mouse::Right)
-          {
-            std::cout << xPos << ',' << yPos << std::endl;
-            drawO(window, xPos, yPos);
-          }
-          shapesCount++;
         }
       }
     }
+
     window.display();
   }
 
