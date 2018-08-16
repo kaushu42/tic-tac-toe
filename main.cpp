@@ -51,6 +51,7 @@ void drawShape(sf::RenderWindow &window, bool shape, int xPos, int yPos)
 {
   shape ? drawX(window, xPos, yPos) : drawO(window, xPos, yPos);
 }
+
 // Draw the board from vertical and horizontal lines
 void drawBoard(sf::RenderWindow &window)
 {
@@ -78,24 +79,103 @@ void drawBoard(sf::RenderWindow &window)
   window.draw(l);
 }
 
+// Check horizontally for game end
+int checkHoriz(int *grids)
+{
+  // If the first element is 0, it means the space has not been filled yet. So there is no possibility for a vertical game to exist in this row.
+  if (grids[0] != 0)
+    if ((grids[0] == grids[1]) and (grids[0] == grids[2])) // See if game has occured
+    {
+      return grids[0]; // Game occured
+    }
+  return 0; // Game has not occured
+}
+
+// Check vertically for game end
+int checkVert(int grids[3][3], int i)
+{
+  // If the first element is 0, it means the space has not been filled yet. So there is no possibility for a vertical game to exist in this column.
+  if (grids[0][i] != 0)
+    if ((grids[0][i] == grids[1][i]) and (grids[0][i] == grids[2][i])) // Check for game ended
+    {
+      return grids[0][i]; // Game ended
+    }
+  return 0; // Game not won
+}
+
+int checkDiag(int grids[][3], bool reverse = false)
+{
+  if (!reverse)
+  {
+    if (grids[0][0] != 0)
+      if ((grids[0][0] == grids[1][1]) and (grids[0][0] == grids[2][2]))
+      {
+        return grids[0][0];
+      }
+  }
+  else
+  {
+    if (grids[0][2] != 0)
+      if ((grids[0][2] == grids[1][1]) and (grids[0][2] == grids[2][0]))
+      {
+        return grids[0][2];
+      }
+  }
+  return 0;
+}
+
+// Find out if the game has ended
+int isGameWon(int grids[3][3])
+{
+  // Initially, assume noone has won
+  int win = 0;
+  // Check for horizontal and vertical wins in one pass
+  for (int i = 0; i < 3; i++)
+  {
+    // See if a horizontal game has occured
+    win = checkHoriz(grids[i]);
+    // If yes, return win. 'win = 1' means player X won and 'win = 2' means player O won.
+    if (win)
+      return win;
+
+    // Check for vertical game
+    // Note that whole array is passed to this function and the variable i denotes the column number to check for game
+    win = checkVert(grids, i);
+    if (win)
+      return win;
+  }
+
+  // Check if a diagonal game has occured
+  win = checkDiag(grids);
+  if (win)
+    return win;
+
+  // Check if a reverse diagonal game has occured
+  win = checkDiag(grids, true);
+  if (win)
+    return win;
+  return false;
+}
+
+void print(int grids[][3])
+{
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < 3; j++)
+      std::cout << grids[i][j] << '\t';
+    std::cout << std::endl;
+  }
+}
 int main(int argc, char const *argv[])
 {
   // Create the main window
   sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight, 32), "Testing SFML", sf::Style::Titlebar | sf::Style::Close);
   window.setVerticalSyncEnabled(true);
-  // sf::CircleShape r(100.0f);
-  // r.setOrigin(r.getPosition().x + r.getRadius(), r.getPosition().y + r.getRadius());
 
-  // Count how many shapes have been placed
-  int shapesCount = 1;
-
+  // Keep track of whose turn it is
   bool currentTurn = true; // true means its X's turn and false means it is O's turn
-  bool gridsFilled[9] = {false};
-  for (auto &i : gridsFilled)
-  {
-    std::cout << i << ", ";
-  }
-  std::cout << std::endl;
+  int grids[3][3] = {0};   // 0 is for not filled, 1 is for filled by X and 2 is for filled by O
+
   // Main game loop
   while (window.isOpen())
   {
@@ -122,76 +202,127 @@ int main(int argc, char const *argv[])
       {
         window.close();
       }
-      // Handle key events only if number of shapes is less than or equal to 9
-      if (shapesCount <= 9)
-      {
-        if (e.type == sf::Event::MouseButtonPressed) // Handle mouse presses
-        {
-          // Get the current mouse position
-          float xPos = e.mouseButton.x, yPos = e.mouseButton.y;
-          std::cout << xPos << ',' << yPos << std::endl;
 
-          // Check if the click is inside the board
-          if (xPos >= 250 and xPos <= 550 and yPos >= 150 and yPos <= 450)
+      if (e.type == sf::Event::MouseButtonPressed) // Handle mouse presses
+      {
+        // Get the current mouse position
+        float xPos = e.mouseButton.x, yPos = e.mouseButton.y;
+        // std::cout << xPos << ',' << yPos << std::endl;
+
+        // Check if the click is inside the board
+        if (xPos >= 250 and xPos <= 550 and yPos >= 150 and yPos <= 450)
+        {
+          if (e.mouseButton.button == sf::Mouse::Left)
           {
-            if (e.mouseButton.button == sf::Mouse::Left)
+            // For boxes (0, 0), (0, 1), (0, 2)
+            if (yPos <= 250)
             {
-              // For boxes (0, 0), (0, 1), (0, 2)
-              if (yPos <= 250)
+              if (xPos <= 350)
               {
-                if (xPos <= 350)
+                if (grids[0][0] == 0)
                 {
                   drawShape(window, currentTurn, 300, 200);
+                  grids[0][0] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
                 }
-                else if (xPos <= 450)
+              }
+              else if (xPos <= 450)
+              {
+                if (grids[0][1] == 0)
                 {
                   drawShape(window, currentTurn, 405, 200);
-                }
-                else
-                {
-                  drawShape(window, currentTurn, 500, 200);
+                  grids[0][1] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
                 }
               }
-              // For boxes (1, 0), (1, 1), (1, 2)
-              else if (yPos <= 350)
-              {
-                if (xPos <= 350)
-                {
-                  drawShape(window, currentTurn, 300, 300);
-                }
-                else if (xPos <= 450)
-                {
-                  drawShape(window, currentTurn, 405, 300);
-                }
-                else
-                {
-                  drawShape(window, currentTurn, 500, 300);
-                }
-              }
-              // For boxes (2, 0), (2, 1), (2, 2)
               else
               {
-                if (xPos <= 350)
+                if (grids[0][2] == 0)
                 {
-                  drawShape(window, currentTurn, 300, 400);
-                }
-                else if (xPos <= 450)
-                {
-                  drawShape(window, currentTurn, 405, 400);
-                }
-                else
-                {
-                  drawShape(window, currentTurn, 500, 400);
+                  drawShape(window, currentTurn, 500, 200);
+                  grids[0][2] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
                 }
               }
-              currentTurn = !currentTurn;
-              shapesCount++;
+            }
+            // For boxes (1, 0), (1, 1), (1, 2)
+            else if (yPos <= 350)
+            {
+              if (xPos <= 350)
+              {
+                if (grids[1][0] == 0)
+                {
+                  drawShape(window, currentTurn, 300, 300);
+                  grids[1][0] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
+              else if (xPos <= 450)
+              {
+                if (grids[1][1] == 0)
+                {
+                  drawShape(window, currentTurn, 405, 300);
+                  grids[1][1] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
+              else
+              {
+                if (grids[1][2] == 0)
+                {
+                  drawShape(window, currentTurn, 500, 300);
+                  grids[1][2] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
+            }
+            // For boxes (2, 0), (2, 1), (2, 2)
+            else
+            {
+              if (xPos <= 350)
+              {
+                if (grids[2][0] == 0)
+                {
+                  drawShape(window, currentTurn, 300, 400);
+                  grids[2][0] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
+              else if (xPos <= 450)
+              {
+                if (grids[2][1] == 0)
+                {
+                  drawShape(window, currentTurn, 405, 400);
+                  grids[2][1] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
+              else
+              {
+                if (grids[2][2] == 0)
+                {
+                  drawShape(window, currentTurn, 500, 400);
+                  grids[2][2] = !currentTurn + 1;
+                  currentTurn = !currentTurn;
+                }
+              }
             }
           }
         }
+        // print(grids);
       }
     }
     window.display();
+    // Check if the game is won
+    if (isGameWon(grids))
+    {
+      // The variable currentTurn denotes whose turn it is.
+      // Note that since currentTurn is inverted on every grid clicked, we need to invert it again.
+      currentTurn = !currentTurn;
+      char winner = currentTurn ? 'X' : 'O';
+      std::cout << "Game Won by " << winner << std::endl;
+      return -1;
+    }
   }
 
   return 0;
